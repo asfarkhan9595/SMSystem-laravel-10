@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Http\Requests\StudentRequest;
 use App\Models\Student;
 use Illuminate\Http\Request;
+use App\Http\Controllers\Controller;
 
 class StudentController extends Controller
 {
@@ -57,10 +58,10 @@ class StudentController extends Controller
      */
     public function edit(string $id)
     {
-        $students = Student::findOrfail($id);
-        return view('student.edit', compact('students'));
+        $student = Student::find($id);
+        return view('student.edit')->with('student', $student);
     }
-
+    
     /**
      * Update the specified resource in storage.
      */
@@ -68,18 +69,21 @@ class StudentController extends Controller
     {
         try {
             $student = Student::find($id);
-
-            $validateStudent = $request->validated();
-            $student->update($validateStudent);
-            return redirect('students')->with('success', 'student Updated!');
+    
+            if (!$student) {
+                return redirect()->route('students')->with('error', 'Student not found.');
+            }
+    
+            $validatedData = $request->validated();
+            $student->update($validatedData);
+    
+            return redirect('students')->with('success', 'Student Updated!');
         } catch (\Exception $e) {
-           
             session()->flash('error', 'An error occurred: ' . $e->getMessage());
-
-            
             return redirect()->route('students');
         }
     }
+    
 
     /**
      * Remove the specified resource from storage.
